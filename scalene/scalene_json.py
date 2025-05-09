@@ -28,6 +28,7 @@ class FunctionDetail(BaseModel):
     n_copy_mb_s: NonNegativeFloat
     n_core_utilization : float = Field(..., ge=0, le=1)
     n_cpu_percent_c: float = Field(..., ge=0, le=100)
+    n_cpu_percent_jit: float = Field(..., ge=0, le=100)
     n_cpu_percent_python: float = Field(..., ge=0, le=100)
     n_gpu_avg_memory_mb: NonNegativeFloat
     n_gpu_peak_memory_mb: NonNegativeFloat
@@ -192,6 +193,7 @@ class ScaleneJSON:
                 "line": line,
                 "n_core_utilization": 0,
                 "n_cpu_percent_c": 0,
+                "n_cpu_percent_jit": 0,
                 "n_cpu_percent_python": 0,
                 "n_sys_percent": 0,
                 "n_gpu_percent": 0,
@@ -214,6 +216,7 @@ class ScaleneJSON:
         # because of floating point inaccuracies, since we perform
         # subtraction to compute it.
         n_cpu_samples_c = max(0, n_cpu_samples_c)
+        n_cpu_samples_jit = max(0, stats.cpu_samples_jit[fname][line_no])
         n_cpu_samples_python = stats.cpu_samples_python[fname][line_no]
         n_gpu_samples = stats.gpu_samples[fname][line_no]
         n_gpu_mem_samples = stats.gpu_mem_samples[fname][line_no]
@@ -221,11 +224,13 @@ class ScaleneJSON:
         # Compute percentages of CPU time.
         if stats.total_cpu_samples:
             n_cpu_percent_c = n_cpu_samples_c * 100 / stats.total_cpu_samples
+            n_cpu_percent_jit = n_cpu_samples_jit * 100 / stats.total_cpu_samples
             n_cpu_percent_python = (
                 n_cpu_samples_python * 100 / stats.total_cpu_samples
             )
         else:
             n_cpu_percent_c = 0
+            n_cpu_percent_jit = n_cpu_samples_jit * 100 / stats.total_cpu_samples
             n_cpu_percent_python = 0
 
         if True:
@@ -300,6 +305,7 @@ class ScaleneJSON:
             "n_copy_mb_s": n_copy_mb_s,
             "n_core_utilization": mean_core_util,
             "n_cpu_percent_c": n_cpu_percent_c,
+            "n_cpu_percent_jit": n_cpu_percent_jit,
             "n_cpu_percent_python": n_cpu_percent_python,
             "n_gpu_avg_memory_mb": n_gpu_mem_samples.mean(),
             "n_gpu_peak_memory_mb": n_gpu_mem_samples.peak(),

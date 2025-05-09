@@ -56,6 +56,10 @@ class ScaleneStatistics:
             defaultdict(lambda: defaultdict(float))
         )
 
+        self.cpu_samples_jit: Dict[Filename, Dict[LineNumber, float]] = (
+            defaultdict(lambda: defaultdict(float))
+        )
+
         #   GPU samples for each location in the program
         self.gpu_samples: Dict[Filename, Dict[LineNumber, float]] = (
             defaultdict(lambda: defaultdict(float))
@@ -201,6 +205,7 @@ class ScaleneStatistics:
         self.stacks.clear()
         self.cpu_samples_python.clear()
         self.cpu_samples_c.clear()
+        self.cpu_samples_jit.clear()
         self.cpu_utilization.clear()
         self.core_utilization.clear()
         self.cpu_samples.clear()
@@ -272,6 +277,9 @@ class ScaleneStatistics:
             fn_stats.cpu_samples_c[fn_name][
                 first_line_no
             ] += self.cpu_samples_c[filename][line_no]
+            fn_stats.cpu_samples_jit[fn_name][
+                first_line_no
+            ] += self.cpu_samples_jit[filename][line_no]
             fn_stats.cpu_samples_python[fn_name][
                 first_line_no
             ] += self.cpu_samples_python[filename][line_no]
@@ -340,6 +348,7 @@ class ScaleneStatistics:
         "stacks",
         "total_cpu_samples",
         "cpu_samples_c",
+        "cpu_samples_jit",
         "cpu_samples_python",
         "bytei_map",
         "cpu_samples",
@@ -445,6 +454,9 @@ class ScaleneStatistics:
                 self.total_gpu_samples += x.total_gpu_samples
                 self.increment_per_line_samples(
                     self.cpu_samples_c, x.cpu_samples_c
+                )
+                self.increment_per_line_samples(
+                    self.cpu_samples_jit, x.cpu_samples_jit
                 )
                 self.increment_per_line_samples(
                     self.cpu_samples_python, x.cpu_samples_python

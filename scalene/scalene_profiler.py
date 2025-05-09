@@ -1070,6 +1070,11 @@ class Scalene:
                 lineno
             ] += average_python_time
             Scalene.__stats.cpu_samples_c[fname][lineno] += average_c_time
+            code_state = getattr(main_thread_frame, "f_code_state", None)
+            if code_state is None:
+                print("Warning: fail to get frame->f_code_state.")
+            elif code_state == 1: # JIT_CODE
+                Scalene.__stats.cpu_samples_jit[fname][lineno] += average_c_time
             Scalene.__stats.cpu_samples[fname] += average_cpu_time
             Scalene.__stats.cpu_utilization[fname][lineno].push(
                 cpu_utilization
